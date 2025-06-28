@@ -1,5 +1,3 @@
 #!/bin/bash
 
-OUT_DIR=$(pwd)/out
-
-ninja -C out ${@:2}
+ninja ${@:2}
