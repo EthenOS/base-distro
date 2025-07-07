@@ -1,0 +1,2 @@
+IS_LIBRARY=1
+

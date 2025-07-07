@@ -38,6 +38,8 @@ ldflags = $LDFLAGS
 
 EOF
 
+libs=()
+
 find . -type f -name 'ethen.sh' | sort | while read -r script; do
   dir=$(dirname "$script")
 
@@ -76,9 +78,22 @@ find . -type f -name 'ethen.sh' | sort | while read -r script; do
     done
 
     libname=$(basename "$dir")
-    echo "build $dir/lib${libname}.a: ar ${objs[*]}" >> build.ninja
+    libfile="$dir/lib${libname}.a"
+    echo "build $libfile: ar ${objs[*]}" >> build.ninja
+    libs+=("$libfile")
   fi
 done
+
+# Final link step: combine all found libraries
+if (( ${#libs[@]} > 0 )); then
+  # List of libraries as space-separated
+  linked_libs="${libs[*]}"
+  echo "" >> build.ninja
+  echo "# Link all libraries into 'ethen'" >> build.ninja
+  echo "build ethen: link $linked_libs" >> build.ninja
+  echo "" >> build.ninja
+  echo "default ethen" >> build.ninja
+fi
 
 echo "[INFO] Ninja build file generated at build.ninja"
 
