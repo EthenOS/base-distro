@@ -17,7 +17,7 @@ source "$DEVICE_SH"
 echo "[INFO] Setting up Ninja build for $DEVICE_NAME ($MANUFACTURER) - Type: $DEVICE_TYPE"
 
 cat > build.ninja <<EOF
-# Auto-generated Ninja build file for $DEVICE_NAME
+# Auto-generated file. DO NOT EDIT!
 ninja_required_version = 1.8
 
 rule cc
@@ -40,7 +40,7 @@ EOF
 
 libs=()
 
-find . -type f -name 'ethen.sh' | sort | while read -r script; do
+while read -r script; do
   dir=$(dirname "$script")
 
   # Extract variables safely without executing arbitrary code
@@ -48,18 +48,25 @@ find . -type f -name 'ethen.sh' | sort | while read -r script; do
     cd "$dir"
     awk -F= '
       $1=="CUSTOM_BUILD"   { print $1"=\"" $2 "\"" }
-      $1=="CUSTOM_CFLAGS"  { print $1"=\"" substr($0, index($0,$2)) "\"" }
+      $1=="CUSTOM_CFLAGS" {
+        gsub(/\(/,"\\(",$2); gsub(/\)/,"\\)",$2)
+        printf("CUSTOM_CFLAGS=(%s)\n", $2)
+      }
       $1=="IS_LIBRARY"     { print $1"=\"" $2 "\"" }
     ' ethen.sh
   )"
 
   # If custom build is enabled, maybe append flags
   if [[ "${CUSTOM_BUILD:-0}" == "1" ]]; then
-    echo "# Custom build flags from $dir" >> build.ninja
-    if [[ -n "${CUSTOM_CFLAGS:-}" ]]; then
-      echo "cflags = \$cflags ${CUSTOM_CFLAGS}" >> build.ninja
+    if (( ${#CUSTOM_CFLAGS[@]} > 0 )); then
+        flags=""
+        for f in "${CUSTOM_CFLAGS[@]}"; do
+            flags+=" $f"
+        done
+        echo "cflags = \$cflags${flags}" >> build.ninja
     fi
-  fi
+fi
+
 
   # If library is requested, generate .o and .a
   if [[ "${IS_LIBRARY:-0}" == "1" ]]; then
@@ -82,17 +89,18 @@ find . -type f -name 'ethen.sh' | sort | while read -r script; do
     echo "build $libfile: ar ${objs[*]}" >> build.ninja
     libs+=("$libfile")
   fi
-done
+done < <(find . -type f -name 'ethen.sh' | sort)
 
+echo "[INFO] Number of libraries: ${#libs[@]}"
 # Final link step: combine all found libraries
 if (( ${#libs[@]} > 0 )); then
   # List of libraries as space-separated
-  linked_libs="${libs[*]}"
-  echo "" >> build.ninja
-  echo "# Link all libraries into 'ethen'" >> build.ninja
-  echo "build ethen: link $linked_libs" >> build.ninja
-  echo "" >> build.ninja
-  echo "default ethen" >> build.ninja
+    linked_libs="${libs[*]}"
+    echo "" >> build.ninja
+    echo "# Link all libraries into 'ethen'" >> build.ninja
+    echo "build ethen: link $linked_libs" >> build.ninja
+    echo "" >> build.ninja
+    echo "default ethen" >> build.ninja
 fi
 
 echo "[INFO] Ninja build file generated at build.ninja"

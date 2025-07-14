@@ -1,2 +1,7 @@
+CUSTOM_BUILD=1
+CUSTOM_CFLAGS="-IFreeRTOS-Kernel/include -IFreeRTOS-Kernel/portable/GCC/ARM_CM4F -Imcu"
 IS_LIBRARY=1
 
+USE_EXTERNAL=1
+EXTERNAL_SRCDIR="freertos/Source"
+EXTERNAL_EXTS=("c" "s")
