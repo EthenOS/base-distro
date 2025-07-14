@@ -58,3 +58,6 @@ dkms.conf
 # Ninja stuff
 build.ninja
 .ninja_log
+
+# EthenOS files
+ethen
