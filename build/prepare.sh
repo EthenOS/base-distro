@@ -12,7 +12,7 @@ if [ ! -f "$DEVICE_SH" ]; then
     exit 1
 fi
 
-source "$DEVICE_SH"
+. "$DEVICE_SH"
 
 echo "[INFO] Setting up Ninja build for $DEVICE_NAME ($MANUFACTURER) - Type: $DEVICE_TYPE"
 
