@@ -141,12 +141,12 @@ SECTIONS
   } >RAM1
 
   /* Remove information from the standard libraries */
-  /DISCARD/ :
+/*  /DISCARD/ :
   {
     libc.a ( * )
     libm.a ( * )
     libgcc.a ( * )
-  }
+  }*/
 
   .ARM.attributes 0       : { *(.ARM.attributes) }
   MAPPING_TABLE (NOLOAD) : { *(MAPPING_TABLE) } >RAM_SHARED

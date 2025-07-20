@@ -5,12 +5,14 @@ MANUFACTURER="ethen"
 DEVICE_TYPE="Watch"
 
 # Compiler settings
-CFLAGS="-Os -mtune=cortex-m4 -nostdlib -nostartfiles -c -T mcu/link.lds"
-LDFLAGS="-Os -mtune=cortex-m4 -nostdlib -nostartfiles -T mcu/link.lds"
+CFLAGS="-Os -mtune=cortex-m4 -nostdlib -nostartfiles -c -T mcu/link.lds -mthumb"
+LDFLAGS="-nostdlib -T mcu/link.lds"
 
 PREFIX="arm-none-eabi"
 CC="$PREFIX-gcc"
+LD="$PREFIX-ld"
 AR="$PREFIX-ar"
+OBJCOPY="$PREFIX-objcopy"
 
 # Library settings
 LIBRARIES_NEEDED="mcu os"

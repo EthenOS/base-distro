@@ -12,7 +12,7 @@ if [ ! -f "$DEVICE_SH" ]; then
     exit 1
 fi
 
-source "$DEVICE_SH"
+. "$DEVICE_SH"
 
 echo "[INFO] Setting up Ninja build for $DEVICE_NAME ($MANUFACTURER) - Type: $DEVICE_TYPE"
 
@@ -28,13 +28,17 @@ rule ar
 rule s_compile
   command = \$cc \$in \$cflags -o \$out
 rule link
-  command = \$cc \$in \$ldflags -o \$out
+  command = \$ld \$in \$ldflags -o \$out
+rule bin
+  command = \$objcopy -O binary \$in \$out
 
 cc = $CC
+ld = $LD
 ar = $AR
 
 cflags = $CFLAGS
 ldflags = $LDFLAGS
+objcopy = $OBJCOPY
 
 EOF
 
@@ -100,7 +104,12 @@ if (( ${#libs[@]} > 0 )); then
     echo "# Link all libraries into 'ethen'" >> build.ninja
     echo "build ethen: link $linked_libs" >> build.ninja
     echo "" >> build.ninja
-    echo "default ethen" >> build.ninja
+   
+
+    # Add build step to convert ELF to binary
+    echo "" >> build.ninja
+    echo "# Convert ELF to binary format" >> build.ninja
+    echo "build ethen.bin: bin ethen" >> build.ninja
 fi
 
 echo "[INFO] Ninja build file generated at build.ninja"
