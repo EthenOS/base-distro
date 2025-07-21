@@ -60,4 +60,4 @@ build.ninja
 .ninja_log
 
 # EthenOS files
-ethen
+firmware.elf

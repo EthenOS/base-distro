@@ -101,15 +101,15 @@ if (( ${#libs[@]} > 0 )); then
   # List of libraries as space-separated
     linked_libs="${libs[*]}"
     echo "" >> build.ninja
-    echo "# Link all libraries into 'ethen'" >> build.ninja
-    echo "build ethen: link $linked_libs" >> build.ninja
+    echo "# Link all libraries into 'firmware.elf'" >> build.ninja
+    echo "build firmware.elf: link $linked_libs" >> build.ninja
     echo "" >> build.ninja
    
 
     # Add build step to convert ELF to binary
     echo "" >> build.ninja
     echo "# Convert ELF to binary format" >> build.ninja
-    echo "build ethen.bin: bin ethen" >> build.ninja
+    echo "build firmware.bin: bin firmware.elf" >> build.ninja
 fi
 
 echo "[INFO] Ninja build file generated at build.ninja"
