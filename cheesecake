@@ -11,4 +11,4 @@ if [[ -z "$1"  ]]; then
     exit 1
 fi
 
-sh $ROOT_DIR/build/$1.sh ${@:2}
+bash $ROOT_DIR/build/$1.sh ${@:2}
