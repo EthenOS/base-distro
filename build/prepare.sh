@@ -28,7 +28,7 @@ rule ar
 rule s_compile
   command = \$cc \$in \$cflags -o \$out
 rule link
-  command = \$ld \$in \$ldflags -o \$out
+  command = \$ld --start-group \$in --end-group \$ldflags -o \$out
 rule bin
   command = \$objcopy -O binary \$in \$out
 
