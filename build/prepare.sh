@@ -47,16 +47,14 @@ libs=()
 while read -r script; do
   dir=$(dirname "$script")
 
-  # Extract variables safely without executing arbitrary code
   eval "$(
-    cd "$dir"
+  cd "$dir" || exit
     awk -F= '
-      $1=="CUSTOM_BUILD"   { print $1"=\"" $2 "\"" }
-      $1=="CUSTOM_CFLAGS" {
-        gsub(/\(/,"\\(",$2); gsub(/\)/,"\\)",$2)
-        printf("CUSTOM_CFLAGS=(%s)\n", $2)
-      }
-      $1=="IS_LIBRARY"     { print $1"=\"" $2 "\"" }
+      $1=="CUSTOM_BUILD"   { printf("%s=\"%s\"\n",$1,$2) }
+      $1=="IS_LIBRARY"     { printf("%s=\"%s\"\n",$1,$2) }
+      $1=="CUSTOM_CFLAGS"  { gsub(/^ *\(|\) *$/,"",$2); printf("CUSTOM_CFLAGS=(%s)\n",$2) }
+      $1=="EXTERNAL_SUBDIRS" { gsub(/^ *\(|\) *$/,"",$2); printf("EXTERNAL_SUBDIRS=(%s)\n",$2) }
+      $1=="EXTERNAL_EXTS"  { gsub(/^ *\(|\) *$/,"",$2); printf("EXTERNAL_EXTS=(%s)\n",$2) }
     ' ethen.sh
   )"
 
@@ -73,25 +71,30 @@ fi
 
 
   # If library is requested, generate .o and .a
-  if [[ "${IS_LIBRARY:-0}" == "1" ]]; then
+  if [[ "$IS_LIBRARY" == "1" ]]; then
     echo "# Building static lib for $dir" >> build.ninja
-
-    # list .c and .s files (non-recursive)
     objs=()
-    for src in "$dir"/*.c "$dir"/*.s; do
-      [[ -f "$src" ]] || continue
-      base=$(basename "$src")
-      ext="${base##*.}"
-      obj="$dir/${base%.*}.o"
-      rulename=$([[ "$ext" == "c" ]] && echo cc || echo s_compile)
-      echo "build $obj: $rulename $dir/$base" >> build.ninja
-      objs+=("$obj")
+
+    for sub in "${EXTERNAL_SUBDIRS[@]:-}"; do
+      src_root="$dir/$sub"
+      echo "[DEBUG] Recursively searching in $src_root"
+
+      while IFS= read -r src; do
+        base=$(basename "$src")
+        ext="${base##*.}"
+        obj="$dir/${base%.*}.o"
+        rule=$([[ "$ext" == "c" ]] && echo cc || echo s_compile)
+        echo "build $obj: $rule $src" >> build.ninja
+        objs+=("$obj")
+        echo "[DEBUG] Added source: $src → $obj"
+      done < <(find "$src_root" -type f \( -name '*.c' -o -name '*.s' \))
     done
 
     libname=$(basename "$dir")
     libfile="$dir/lib${libname}.a"
     echo "build $libfile: ar ${objs[*]}" >> build.ninja
     libs+=("$libfile")
+    echo "[DEBUG] lib created: $libfile"
   fi
 done < <(find . -type f -name 'ethen.sh' | sort)
 

@@ -14,4 +14,7 @@
 #define configUSE_IDLE_HOOK 1
 #define configUSE_PREEMPTION 1
 
+// Security stuff
+#define configALLOW_UNPRIVILEGED_CRITICAL_SECTIONS 0
+
 #endif // FREERTOS_CONFIG_H
